@@ -1,11 +1,19 @@
+html {
+    margin: 0;
+}
 body {
     margin: 0;
-    overflow: scroll;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
 }
 canvas {
-    border: 1px solid black;
+    border: none;
     border-radius: 16px;
     margin: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 #frameNum {
@@ -15,5 +23,30 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+#canvasContainer {
+    width: 50%;
+    height: 60%;
+    border: 1px solid black;
+    border-radius: 16px;
+    position: relative; 
+    display: flex; 
+}
+
+#editor {
+    border: none;
+    border-radius: 16px;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: none;
+    position: absolute; 
+}
+
+.monaco-scrollable-element > .scrollbar > .slider {
+    border-radius: 16px !important;  
+    background-color: rgba(0,0,0,0.3); 
 }
 

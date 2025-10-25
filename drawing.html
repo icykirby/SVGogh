@@ -11,9 +11,13 @@
 
 </head>
 <body>
-    <div id="editor" style="width:400px; height:400px; border:1px solid #ccc;"></div>
+    <div id="canvasContainer">
+        <canvas id="canvas"></canvas>
+        <div id="editor"></div>
+    </div>
+    
 
-    <canvas id="canvas" height="400" width="400"></canvas>
+    
     <div id="frameNum"></div>
     <button id="download">download</button>
     <button id="undo">undo</button>
@@ -27,6 +31,7 @@
     <button id="erase">erase</button>
     <button id="clear">clear frame</button>
     <button id="onion">onion</button>
+    <button id="swap">swap to code</button>
     
 
 </html>

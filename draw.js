@@ -1,6 +1,37 @@
 //canavs setup
+
 const displayCanvas = document.getElementById("canvas");
 const displayCtx = displayCanvas.getContext("2d");
+
+const container = displayCanvas.parentElement;
+displayCanvas.width = container.clientWidth;
+displayCanvas.height = container.clientHeight;
+
+// resizing
+window.addEventListener('resize', () => {
+    const newWidth = container.clientWidth;
+    const newHeight = container.clientHeight;
+    
+
+    const temp = document.createElement("canvas");
+    temp.width = displayCanvas.width;
+    temp.height = displayCanvas.height;
+    const tempCtx = temp.getContext("2d");
+    tempCtx.drawImage(displayCanvas, 0, 0);
+    
+
+    displayCanvas.width = newWidth;
+    displayCanvas.height = newHeight;
+    
+ 
+    displayCtx.lineWidth = 10;
+    displayCtx.strokeStyle = "black";
+    displayCtx.lineCap = "round";
+ 
+    displayCtx.drawImage(temp, 0, 0, newWidth, newHeight);
+  
+    redrawFrame();
+});
 
 //drawing settings
 displayCtx.lineWidth = 10;
@@ -307,13 +338,16 @@ playBtn.addEventListener("click", () => {
 });
 
 stopBtn.addEventListener("click", () => {
+    stop();
+
+});
+function stop(){
     playing = false;
     cancelAnimationFrame(animationId);
     displayFrame(currentFrame);
     updateCurrFrameDisplay(shownFrameNum);
 
-});
-
+}
 
 ///delete frame
 const deleteBtn = document.getElementById("deleteFrame");
@@ -401,22 +435,47 @@ function onionSkin(){
 
 require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
 
-require(['vs/editor/editor.main'], function() {
-    window.editor = monaco.editor.create(document.getElementById('editor'), {
-        value: '// Your code here',
-        language: 'html',
-        theme: 'vs-dark',
-        fontFamily: 'Fira Code, monospace',
-        fontSize: 14,
-        lineHeight: 22,
-        automaticLayout: true,
-        readOnly: false,
-        cursorBlinking: 'smooth',
-        cursorStyle: 'line',
-        renderWhitespace: 'all',
-        minimap: { enabled: false},
-        wordWrap: 'on',
-        lineNumbers: 'relative',
-        folding: true
+// At the end of draw.js, replace the Monaco code with:
+
+window.addEventListener('DOMContentLoaded', function() {
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
+
+    require(['vs/editor/editor.main'], function() {
+        window.editor = monaco.editor.create(document.getElementById('editor'), {
+            value: '// Your code here',
+            language: 'javascript',
+            theme: 'vs-dark',
+            fontFamily: 'Fira Code, monospace',
+            fontSize: 14,
+            lineHeight: 22,
+            automaticLayout: true,
+            readOnly: false,
+            cursorBlinking: 'smooth',
+            cursorStyle: 'line',
+            renderWhitespace: 'all',
+            minimap: { enabled: false},
+            wordWrap: 'on',
+            lineNumbers: 'on',
+            folding: true,
+            padding: { left: 10, right: 10, top: 10, bottom: 10 },
+        });
     });
 });
+
+const canvasContainer = document.getElementById("canvasContainer");
+const editor = document.getElementById("editor");
+const swapBtn = document.getElementById("swap");
+
+swapBtn.addEventListener("click", () => {
+    if (displayCanvas.style.display !== 'none') {
+        displayCanvas.style.display = 'none';
+        editor.style.display = 'block';
+        if(playing){
+            stop();
+        }
+    } else {
+        displayCanvas.style.display= 'block';
+        editor.style.display = 'none';
+    }
+});
+
