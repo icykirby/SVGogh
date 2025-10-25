@@ -1,6 +1,6 @@
 //canavs setup
 const displayCanvas = document.getElementById("canvas");
-const displayCtx = canvas.getContext("2d");
+const displayCtx = displayCanvas.getContext("2d");
 
 //drawing settings
 displayCtx.lineWidth = 10;
@@ -63,6 +63,7 @@ downloadBtn.addEventListener("click", () => {
 let frames = [];
 function addFrame(frame){
     frames.push(frame);
+    totalFrames = frames.length;
 }
 
 function createFrame(){
@@ -79,40 +80,51 @@ function createFrame(){
 const currFrameDisplay = document.getElementById("frameNum");
 let currentFrame = 0;
 let totalFrames = frames.length;
+let shownFrameNum = 0;
 
-function updateCurrFrameDisplay(currFrameNum){
-    currFrameDisplay.innerHTML = currFrameNum;
+function updateShownFrameNum(){
+    shownFrameNum = currentFrame + 1;
 }
-updateCurrFrameDisplay(currentFrame);
 
-addFrame({displayCanvas, displayCtx});
+function updateCurrFrameDisplay(num){
+    currFrameDisplay.innerHTML = num;
+}
+updateShownFrameNum();
+updateCurrFrameDisplay(shownFrameNum);
+
+//addFrame({displayCanvas, displayCtx});
 let firstFrame = createFrame();
 addFrame(firstFrame);
-currentFrame += 1;
-updateCurrFrameDisplay(currentFrame);
+
+updateCurrFrameDisplay(shownFrameNum);
 
 
 const nextBtn = document.getElementById("nextFrame");
 nextBtn.addEventListener("click", () => {
     frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
     if(currentFrame + 1 >= totalFrames){
-        nextFrame = createFrame();
+        let nextFrame = createFrame();
         addFrame(nextFrame);
         currentFrame += 1;
-        updateCurrFrameDisplay(currentFrame);
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
         displayFrame(currentFrame);
     }
     else{
         currentFrame += 1;
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
+        displayFrame(currentFrame);
     }
 });
 
 const prevBtn = document.getElementById("prevFrame");
 prevBtn.addEventListener("click", () => {
     frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
-    if(currentFrame > 1){
+    if(currentFrame > 0){
         currentFrame -= 1;
-        updateCurrFrameDisplay(currentFrame);
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
         displayFrame(currentFrame);
     }
     else{
@@ -125,3 +137,42 @@ function displayFrame(index){
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
     displayCtx.drawImage(frame.newFrame, 0, 0);
 }
+
+//animation functionality
+const playBtn = document.getElementById("play");
+const stopBtn = document.getElementById("stop");
+
+let playing = false;
+let fps = 2;
+let frameInterval = 1000 / fps;
+let playBack = 0;
+let animationId = null;
+
+function runAnimation(timestamp){
+    if(!playing){
+        return;
+    }
+    if(timestamp - lastTime > frameInterval){
+        lastTime = timestamp;
+        displayFrame(playBack);
+        updateCurrFrameDisplay(playBack + 1);
+        playBack = (playBack + 1) % totalFrames;
+    }
+    requestAnimationFrame(runAnimation);
+}
+
+playBtn.addEventListener("click", () => {
+    if(!playing){
+        frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+        playing = true;
+        lastTime = 0;
+        animationId = requestAnimationFrame(runAnimation);
+    }
+});
+
+stopBtn.addEventListener("click", () => {
+    playing = false;
+    cancelAnimationFrame(animationId);
+    displayFrame(currentFrame);
+    updateCurrFrameDisplay(shownFrameNum);
+});
