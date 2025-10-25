@@ -285,7 +285,11 @@ function runAnimation(timestamp){
     }
     if(timestamp - lastTime > frameInterval){
         lastTime = timestamp;
-        displayFrame(playBack);
+    
+        const frame = frames[playBack];
+        displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+        displayCtx.drawImage(frame.newFrame, 0, 0);
+        
         updateCurrFrameDisplay(playBack + 1);
         playBack = (playBack + 1) % totalFrames;
     }
@@ -294,9 +298,10 @@ function runAnimation(timestamp){
 
 playBtn.addEventListener("click", () => {
     if(!playing){
-        frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+        saveCurrentFrame();
         playing = true;
         lastTime = 0;
+        playBack = 0;
         animationId = requestAnimationFrame(runAnimation);
     }
 });
@@ -306,6 +311,7 @@ stopBtn.addEventListener("click", () => {
     cancelAnimationFrame(animationId);
     displayFrame(currentFrame);
     updateCurrFrameDisplay(shownFrameNum);
+
 });
 
 
@@ -364,8 +370,6 @@ function onionSkin(){
     if(currentFrame == 0){
         return;
     }
-
-    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
     
     for (let item of getCurrentStrokes()) {
         if(item.type === "clear"){
