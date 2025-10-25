@@ -424,15 +424,6 @@ function onionSkin(){
 }
 
 
-
-
-
-
-
-
-
-
-
 require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
 
 // At the end of draw.js, replace the Monaco code with:
