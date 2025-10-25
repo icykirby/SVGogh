@@ -479,3 +479,14 @@ swapBtn.addEventListener("click", () => {
     }
 });
 
+
+document.addEventListener("DOMContentLoaded", () => {
+    Coloris({
+      el: '#colorInput', // attach to input element
+      theme: 'polaroid',
+      format: 'rgb',
+      onChange: (color, inputEl) => {
+        console.log(`The new color is ${color}`);
+      }
+    });
+});
