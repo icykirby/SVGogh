@@ -7,6 +7,27 @@ displayCtx.lineWidth = 10;
 displayCtx.strokeStyle = "black";
 displayCtx.lineCap = "round";
 
+//drawing buttons -- FIX DRAW AND ERASE
+const drawBtn = document.getElementById("draw"); 
+drawBtn.addEventListener("click", () => {
+
+});
+const eraserBtn = document.getElementById("erase");
+eraserBtn.addEventListener("click", () => {
+
+});
+const clearBtn = document.getElementById("clear");
+clearBtn.addEventListener("click", () => {
+    const clearStroke = {
+        type: "clear"
+    };
+
+    frameStrokes[currentFrame].push(clearStroke);
+    frameUndoneStrokes[currentFrame] = [];
+
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+    saveCurrentFrame();
+});
 
 //UNDO AND REDO
 let frameStrokes = [[]];
@@ -59,8 +80,14 @@ redoBtn.addEventListener("click", () => {
 
 function redrawFrame(){
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
-    for (let path of getCurrentStrokes()) {
-        displayCtx.stroke(path);
+    for (let item of getCurrentStrokes()) {
+        if(item.type === "clear"){
+            displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+            continue;
+        }
+        else{
+            displayCtx.stroke(item);
+        }
     }
 }
 
@@ -99,6 +126,7 @@ displayCanvas.addEventListener("mouseup", (e) => {
     if(drawing && currentPath) {
         frameStrokes[currentFrame].push(currentPath);
         frameUndoneStrokes[currentFrame] = [];
+        console.log(svg);
     }
     drawing = false;
 });
@@ -107,6 +135,7 @@ displayCanvas.addEventListener("mouseleave", (e) => {
     if(drawing && currentPath) {
         frameStrokes[currentFrame].push(currentPath);
         frameUndoneStrokes[currentFrame] = [];
+        console.log(svg);
     }
     drawing = false;
 });
@@ -115,7 +144,6 @@ displayCanvas.addEventListener("mouseleave", (e) => {
 let svg = "";
 function trackSvgPath(key, x, y){
     svg += `${key}${x} ${y} `;
-    console.log(svg);
 }
 
 //SVG download button
