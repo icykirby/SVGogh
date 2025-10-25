@@ -388,3 +388,35 @@ function onionSkin(){
         displayCtx.restore();
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
+
+require(['vs/editor/editor.main'], function() {
+    window.editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '// Your code here',
+        language: 'html',
+        theme: 'vs-dark',
+        fontFamily: 'Fira Code, monospace',
+        fontSize: 14,
+        lineHeight: 22,
+        automaticLayout: true,
+        readOnly: false,
+        cursorBlinking: 'smooth',
+        cursorStyle: 'line',
+        renderWhitespace: 'all',
+        minimap: { enabled: false},
+        wordWrap: 'on',
+        lineNumbers: 'relative',
+        folding: true
+    });
+});
