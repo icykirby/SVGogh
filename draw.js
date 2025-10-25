@@ -92,7 +92,6 @@ function updateCurrFrameDisplay(num){
 updateShownFrameNum();
 updateCurrFrameDisplay(shownFrameNum);
 
-//addFrame({displayCanvas, displayCtx});
 let firstFrame = createFrame();
 addFrame(firstFrame);
 
