@@ -280,3 +280,48 @@ stopBtn.addEventListener("click", () => {
     updateCurrFrameDisplay(shownFrameNum);
 });
 
+
+///delete frame
+const deleteBtn = document.getElementById("deleteFrame");
+deleteBtn.addEventListener("click", () => {
+    deleteFrame(currentFrame);
+});
+function deleteFrame(i){
+    console.log("Current frame index:", currentFrame, "Total frames:", frames.length);
+
+    if(frames.length == 1){
+        displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+        frameStrokes.splice(i, 1);
+        frameUndoneStrokes.splice(i, 1);
+        frameStrokes[0] = [];
+        frameUndoneStrokes[0] = [];
+        saveCurrentFrame();
+        return;
+    }
+    
+    frames.splice(i, 1);
+    frameStrokes.splice(i, 1);
+    frameUndoneStrokes.splice(i, 1);
+    totalFrames = frames.length;
+    
+    if(currentFrame >= frames.length){
+        currentFrame = frames.length - 1;
+    }
+
+    updateShownFrameNum();
+    updateCurrFrameDisplay(shownFrameNum);
+    displayFrame(currentFrame);
+    console.log("frame deleted");
+    console.log("Current frame index:", currentFrame, "Total frames:", frames.length);
+
+}
+
+//Onion skinning
+const onionBtn = document.getElementById("onion");
+
+let onionCanvas = document.createElement("canvas");
+let onionCtx = onionCanvas.getContext("2d");
+
+onionBtn.addEventListener("click", () => {
+
+});
