@@ -7,14 +7,79 @@ displayCtx.lineWidth = 10;
 displayCtx.strokeStyle = "black";
 displayCtx.lineCap = "round";
 
+
+//UNDO AND REDO
+let frameStrokes = [[]];
+let frameUndoneStrokes = [[]];
+let currentPath;
+
+function getCurrentStrokes() {
+    return frameStrokes[currentFrame];
+}
+
+function getCurrentUndoneStrokes() {
+    return frameUndoneStrokes[currentFrame];
+}
+
+const undoBtn = document.getElementById("undo");
+undoBtn.addEventListener("click", () => {
+    if(getCurrentStrokes().length === 0){
+        if(currentFrame > 0){
+            saveCurrentFrame();
+            currentFrame -= 1;
+            updateShownFrameNum();
+            updateCurrFrameDisplay(shownFrameNum);
+            displayFrame(currentFrame);
+        }
+        return;
+    }
+    const undone = frameStrokes[currentFrame].pop();
+    frameUndoneStrokes[currentFrame].push(undone);
+    redrawFrame();
+    saveCurrentFrame();
+});
+
+const redoBtn = document.getElementById("redo");
+redoBtn.addEventListener("click", () => {
+    if(getCurrentUndoneStrokes().length === 0){
+        if(currentFrame < totalFrames - 1){
+            saveCurrentFrame();
+            currentFrame += 1;
+            updateShownFrameNum();
+            updateCurrFrameDisplay(shownFrameNum);
+            displayFrame(currentFrame);
+        }
+        return;
+    }
+    const redone = frameUndoneStrokes[currentFrame].pop();
+    frameStrokes[currentFrame].push(redone);
+    redrawFrame();
+    saveCurrentFrame();
+});
+
+function redrawFrame(){
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+    for (let path of getCurrentStrokes()) {
+        displayCtx.stroke(path);
+    }
+}
+
+function saveCurrentFrame(){
+    frames[currentFrame].ctx.clearRect(0, 0, frames[currentFrame].newFrame.width, frames[currentFrame].newFrame.height);
+    frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+}
+
+
 ////drawing functions -- CHANGE FOR TOUCH AND STYLUS SUPPORT
 let drawing = false;
 displayCanvas.addEventListener("mousedown", (e) => {
     drawing = true;
     let x = e.offsetX;
     let y = e.offsetY;
-    displayCtx.beginPath();
-    displayCtx.moveTo(x, y);
+
+    currentPath = new Path2D();
+
+    currentPath.moveTo(x, y);
     trackSvgPath("M", x, y);
 });
 
@@ -23,17 +88,26 @@ displayCanvas.addEventListener("mousemove", (e) => {
     let y = e.offsetY;
 
     if(drawing){
-        displayCtx.lineTo(x, y);
-        displayCtx.stroke();
+        
+        currentPath.lineTo(x, y);
+        displayCtx.stroke(currentPath);
         trackSvgPath("L", x, y);
     }
 });
 
 displayCanvas.addEventListener("mouseup", (e) => {
+    if(drawing && currentPath) {
+        frameStrokes[currentFrame].push(currentPath);
+        frameUndoneStrokes[currentFrame] = [];
+    }
     drawing = false;
 });
 
 displayCanvas.addEventListener("mouseleave", (e) => {
+    if(drawing && currentPath) {
+        frameStrokes[currentFrame].push(currentPath);
+        frameUndoneStrokes[currentFrame] = [];
+    }
     drawing = false;
 });
 
@@ -100,10 +174,12 @@ updateCurrFrameDisplay(shownFrameNum);
 
 const nextBtn = document.getElementById("nextFrame");
 nextBtn.addEventListener("click", () => {
-    frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+    saveCurrentFrame();
     if(currentFrame + 1 >= totalFrames){
         let nextFrame = createFrame();
         addFrame(nextFrame);
+        frameStrokes.push([]);
+        frameUndoneStrokes.push([]);
         currentFrame += 1;
         updateShownFrameNum();
         updateCurrFrameDisplay(shownFrameNum);
@@ -119,7 +195,7 @@ nextBtn.addEventListener("click", () => {
 
 const prevBtn = document.getElementById("prevFrame");
 prevBtn.addEventListener("click", () => {
-    frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+    saveCurrentFrame();
     if(currentFrame > 0){
         currentFrame -= 1;
         updateShownFrameNum();
@@ -175,3 +251,4 @@ stopBtn.addEventListener("click", () => {
     displayFrame(currentFrame);
     updateCurrFrameDisplay(shownFrameNum);
 });
+
