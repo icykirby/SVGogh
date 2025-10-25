@@ -89,11 +89,36 @@ function redrawFrame(){
             displayCtx.stroke(item);
         }
     }
+
+    if(usingOnion){
+        onionSkin();
+    }
 }
 
 function saveCurrentFrame(){
+
     frames[currentFrame].ctx.clearRect(0, 0, frames[currentFrame].newFrame.width, frames[currentFrame].newFrame.height);
-    frames[currentFrame].ctx.drawImage(displayCanvas, 0, 0);
+
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = displayCanvas.width;
+    tempCanvas.height = displayCanvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    
+    tempCtx.lineWidth = displayCtx.lineWidth;
+    tempCtx.strokeStyle = displayCtx.strokeStyle;
+    tempCtx.lineCap = displayCtx.lineCap;
+    
+    for (let item of getCurrentStrokes()) {
+        if(item.type === "clear"){
+            tempCtx.clearRect(0, 0, tempCanvas.width, tempCanvas.height);
+            continue;
+        }
+        else{
+            tempCtx.stroke(item);
+        }
+    }
+    
+    frames[currentFrame].ctx.drawImage(tempCanvas, 0, 0);
 }
 
 
@@ -239,6 +264,9 @@ function displayFrame(index){
     const frame = frames[index];
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
     displayCtx.drawImage(frame.newFrame, 0, 0);
+    if(usingOnion && currentFrame > 0){
+        onionSkin();
+    }
 }
 
 //animation functionality
@@ -321,7 +349,38 @@ const onionBtn = document.getElementById("onion");
 
 let onionCanvas = document.createElement("canvas");
 let onionCtx = onionCanvas.getContext("2d");
-
+let usingOnion = false;
 onionBtn.addEventListener("click", () => {
-    
+    usingOnion = !usingOnion;
+    if(usingOnion){
+        onionSkin();
+    }
+    else {
+        redrawFrame(); 
+    }
 });
+
+function onionSkin(){
+    if(currentFrame == 0){
+        return;
+    }
+
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+    
+    for (let item of getCurrentStrokes()) {
+        if(item.type === "clear"){
+            displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+            continue;
+        }
+        else{
+            displayCtx.stroke(item);
+        }
+    }
+
+    if (currentFrame > 0) {
+        displayCtx.save();
+        displayCtx.globalAlpha = 0.3;
+        displayCtx.drawImage(frames[currentFrame - 1].newFrame, 0, 0);
+        displayCtx.restore();
+    }
+}
