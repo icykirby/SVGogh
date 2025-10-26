@@ -70,7 +70,7 @@ def load_user(user_id):
 # --- API ENDPOINTS (ALL ROUTES CHANGED TO USE @api.route) ---
 
 # This is the new, uncached registration endpoint 
-@api.route('/api/signup_user', methods=['POST']) 
+@api.route('/api/register', methods=['POST']) 
 def register():
     """Endpoint for user registration."""
     data = request.get_json()
@@ -271,3 +271,4 @@ def delete_canvas(canvas_id):
 
 if __name__ == '__main__':
     api.run(debug=False) # Changed from app.run to api.run
+
