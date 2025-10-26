@@ -1,0 +1,433 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root {
+    font-family: "Poppins", sans-serif;
+}
+
+html,
+body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    margin: 0;
+    overflow: auto;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.background {
+    flex: 1;
+}
+
+canvas {
+    border: none;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background-color: white;
+    display: block;
+    transform-origin: top left;
+}
+
+.scrollInner {
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+}
+
+#frameNum {
+    width: 40px;
+    height: 40px;
+    border: 1px solid black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50px;
+}
+
+
+
+#canvasContainer::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+    border-radius: 20px;
+}
+
+#canvasContainer::-webkit-scrollbar-track {
+    /*scroll bar track color*/
+    background: rgba(21, 255, 0, 0.1);
+    border-radius: 20px;
+}
+
+#canvasContainer::-webkit-scrollbar-thumb {
+    /*scroll bar color*/
+    background: rgba(255, 0, 0, 0.3);
+    border-radius: 20px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+#editor {
+    border: none;
+    border-radius: 20px;
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: none;
+    position: absolute;
+}
+
+.monaco-scrollable-element>.scrollbar>.slider {
+    border-radius: 16px !important;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+
+.clr-field button {
+    display: none !important;
+}
+
+
+.clr-field input {
+    padding-left: 8px !important;
+}
+
+
+#colorBtn input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+
+
+/************* CONTENT STYLING ****************/
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
+    background: #ffffff;
+}
+
+.navbar__canvas {
+    background-color: white;
+}
+
+.navbar__links {
+    display: flex;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar__link-item {
+    margin: 0;
+}
+
+.navbar__link-button {
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+.navbar__link-button:hover {
+    text-decoration: underline;
+    color: #007acc;
+}
+
+.navbar__logo img {
+    height: 120px;
+
+    transition: all 0.3s ease;
+}
+
+/* shrinking nav */
+
+.navbar.shrink {
+    padding: 0.75rem 2rem;
+    /* smaller padding */
+    background: #ffffff;
+}
+
+.navbar.shrink .navbar__logo img {
+    height: 70px;
+}
+
+/* ---- Button styling for links ---- */
+.button-link,
+.navbar__link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #008e68;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    box-shadow: 0 0 8px rgba(101, 0, 160, 0.5);
+}
+
+.button-link:hover,
+.navbar__link:hover {
+    background-color: #4b0075;
+    border-color: #ffffff;
+    box-shadow: 0 0 15px rgba(101, 0, 160, 0.8), 0 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.button-link:active,
+.navbar__link:active,
+.header__button:active,
+.button-link:focus,
+.navbar__link:focus {
+    outline: none;
+    transform: translateY(0);
+    box-shadow: 0 0 10px rgba(101, 0, 160, 0.7), 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.navbar__link {
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+/* button styling for top */
+
+.button__set--top {
+    display: flex;
+    align-items: center;
+    padding: 10px 2rem;
+    gap: 10px;
+    border-top: 7px dotted #4b0075;
+}
+
+.right-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.button__set--top img {
+    height: 40px;
+    display: block;
+}
+
+#frameNum {
+    min-width: 30px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+/* left buttons and canvas */
+
+.grid {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+    gap: 1rem;
+    padding: 0 10rem;
+}
+
+.background {
+    background-image: url(img/background.jpg);
+}
+
+/* Left buttons panel */
+.button__set-left {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 80px;
+    border: solid;
+    padding: 30px 0;
+    border-radius: 20px;
+    background-color: white;
+}
+
+.button__set-left button {
+    padding: 10px 0;
+}
+
+.button__set-left img {
+    height: 35px;
+}
+
+.button__set--center {
+    display: flex;
+    gap: 10px;
+    border: solid;
+    border-radius: 20px;
+    padding: 15px;
+    background-color: white;
+    margin-bottom: 1rem;
+}
+
+.button__arrow--left,
+.button__arrow--right {
+    background-color: white;
+    padding: 20px 5px 5px 5px;
+    border-radius: 500px;
+    height: 40px;
+}
+
+.button__set--center img {
+    height: 35px;
+}
+
+button {
+    border: none;
+    background-color: white;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+    background-color: #ffffff;
+    transform: scale(1.05);
+    border-radius: 0;
+}
+
+button img {
+    height: 30px;
+    width: 30px;
+    pointer-events: none;
+    transition: transform 0.2s ease-in-out;
+}
+
+button:hover img {
+    transform: scale(1.1);
+}
+
+#colorPicker {
+    padding-top: 60px;
+}
+
+
+
+/* Canvas container */
+#canvasContainer {
+    margin-top: 50px;
+    width: 100%;
+    height: 500px;
+    border: 1px solid black;
+    border-radius: 16px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    background-color: gray;
+}
+
+/* Canvas inside container */
+.scrollInner {
+    flex: 1;
+    overflow: auto;
+    max-height: 500px;
+}
+
+#canvas {
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+    border-radius: 16px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr;
+        /* stack vertically */
+        grid-template-rows: auto 1fr;
+    }
+
+    .button__set-left {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #canvasContainer {
+        height: 300px;
+    }
+}
+
+.button__set--bottom {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 1rem;
+    justify-content: center;
+}
+
+/* FOOTER */
+
+.grid__footer {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+    text-align: center;
+    padding: 1rem 3rem 0 3rem;
+}
+
+footer img {
+    height: 200px;
+}
+
+footer {
+    background-color: #ffffff;
+    text-align: center;
+    padding: 1.5rem 0;
+    width: 100%;
+    margin-top: auto;
+}
+
+.footer__link {
+    text-align: center;
+    margin: 0.5rem 0;
+    color: black;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 10px;
+}
+
+#footer__link--home {
+    margin-top: 1rem;
+}
+
+
+.social-icons img {
+    height: 50px;
+    padding: 0 15px;
+}
+
+#shapeSelector {
+    display: none;
+}
+
+#shapeSelector.open {
+    display: inline-block;
+}
