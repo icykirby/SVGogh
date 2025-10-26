@@ -1071,3 +1071,5 @@ function applyMonacoEditsToFramePaths() {
         console.warn("Invalid SVG input in Monaco — could not sync", e);
     }
 }
+
+

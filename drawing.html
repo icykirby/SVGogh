@@ -37,57 +37,59 @@
       <button id="swap"><img src="img/code.svg" /></button>
     </div>
   </div>
-  <div class="grid">
-    <div class="button__set-left">
-      <button id="colorPicker"><img src="img/picker.svg" /></button>
-      <button id="colorBtn"><img src="img/color.svg" />
-        <input id="colorInput" type="text" value="rgb(0, 0, 0)" data-coloris>
-      </button>
-      <input id="brushSizeInput" type="number" value=5 placeholder="Brush Size">
-      <button id="shapes"><img src="img/shapes.svg" /></button>
-      <select id="shapeSelector">
-        <option value="none" selected>Free Draw</option>
-        <option value="circle">Circle</option>
-        <option value="square">Square</option>
-        <option value="triangle">Triangle</option>
-        <option value="heart">Heart</option>
-        <option value="diamond">Diamond</option>
-      </select>
+  <div class="background">
+    <div class="grid">
+      <div class="button__set-left">
+        <button id="colorPicker"><img src="img/picker.svg" /></button>
+        <button id="colorBtn"><img src="img/color.svg" />
+          <input id="colorInput" type="text" value="rgb(0, 0, 0)" data-coloris>
+        </button>
+        <input id="brushSizeInput" type="number" value=5 placeholder="Brush Size">
+        <button id="shapes"><img src="img/shapes.svg" /></button>
+        <select id="shapeSelector">
+          <option value="none" selected>Free Draw</option>
+          <option value="circle">Circle</option>
+          <option value="square">Square</option>
+          <option value="triangle">Triangle</option>
+          <option value="heart">Heart</option>
+          <option value="diamond">Diamond</option>
+        </select>
 
-      <button id="clear"><img src="img/clearframe.svg" /></button>
-      <button id="deleteFrame"><img src="img/delete.svg" /></button>
-    </div>
-
-    <div id="canvasContainer">
-      <div class="scrollInner">
-        <canvas id="canvas"></canvas>
+        <button id="clear"><img src="img/clearframe.svg" /></button>
+        <button id="deleteFrame"><img src="img/delete.svg" /></button>
       </div>
 
-      <div id="editor"></div>
-    </div>
-  </div>
+      <div id="canvasContainer">
+        <div class="scrollInner">
+          <canvas id="canvas"></canvas>
+        </div>
 
-  <br><br>
-
-  <div class="button__set--bottom">
-    <div class="button__arrow--left">
-      <button id="prevFrame"><img src="img/arrowleft.svg" /></button>
+        <div id="editor"></div>
+      </div>
     </div>
 
-    <div class="button__set--center">
-      <button id="play"><img src="img/play.svg" /></button>
-      <button id="stop"><img src="img/stop.svg" /></button>
-      <button id="zoomIn"><img src="img/zoomin.svg" /></button>
-      <button id="zoomReset"><img src="img/reset.svg" /></button>
-      <button id="zoomOut"><img src="img/zoomout.svg" /></button>
-      <button id="onion"><img src="img/onion.png" /></button>
-      <button id="loop"><img src="img/loop.svg" /></button>
-      <input id="fpsInput" type="number" value=12 placeholder="FPS">
-      <button id="download"><img src="img/download.svg" /></button>
-    </div>
+    <br><br>
 
-    <div class="button__arrow--right">
-      <button id="nextFrame"><img src="img/arrowright.svg" /></button>
+    <div class="button__set--bottom">
+      <div class="button__arrow--left">
+        <button id="prevFrame"><img src="img/arrowleft.svg" /></button>
+      </div>
+
+      <div class="button__set--center">
+        <button id="play"><img src="img/play.svg" /></button>
+        <button id="stop"><img src="img/stop.svg" /></button>
+        <button id="zoomIn"><img src="img/zoomin.svg" /></button>
+        <button id="zoomReset"><img src="img/reset.svg" /></button>
+        <button id="zoomOut"><img src="img/zoomout.svg" /></button>
+        <button id="onion"><img src="img/onion.png" /></button>
+        <button id="loop"><img src="img/loop.svg" /></button>
+        <input id="fpsInput" type="number" value=12 placeholder="FPS">
+        <button id="download"><img src="img/download.svg" /></button>
+      </div>
+
+      <div class="button__arrow--right">
+        <button id="nextFrame"><img src="img/arrowright.svg" /></button>
+      </div>
     </div>
   </div>
 
