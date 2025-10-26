@@ -1055,6 +1055,8 @@ function applyMonacoEditsToFramePaths() {
         const svgDoc = parser.parseFromString(svgCode, "image/svg+xml");
 
 
+
+
         const allElements = svgDoc.querySelectorAll("path, circle, rect, polygon, ellipse, line, polyline");
 
         framePaths[currentFrame] = [];
