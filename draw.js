@@ -7,6 +7,8 @@ const container = displayCanvas.parentElement;
 displayCanvas.width = container.clientWidth;
 displayCanvas.height = container.clientHeight;
 
+
+
 // resizing
 window.addEventListener('resize', () => {
     const newWidth = container.clientWidth;
@@ -109,22 +111,24 @@ redoBtn.addEventListener("click", () => {
     saveCurrentFrame();
 });
 
-function redrawFrame(){
+function redrawFrame() {
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
     for (let item of getCurrentStrokes()) {
-        if(item.type === "clear"){
+        if (item.type === "clear") {
             displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
             continue;
         }
-        else{
-            displayCtx.stroke(item);
-        }
+
+        displayCtx.strokeStyle = item.color;
+        displayCtx.lineWidth = item.lineWidth;
+        displayCtx.stroke(item.path);
     }
 
-    if(usingOnion){
+    if (usingOnion) {
         onionSkin();
     }
 }
+
 
 function saveCurrentFrame(){
 
@@ -145,7 +149,9 @@ function saveCurrentFrame(){
             continue;
         }
         else{
-            tempCtx.stroke(item);
+            tempCtx.strokeStyle = item.color;
+            tempCtx.lineWidth = item.lineWidth;
+            tempCtx.stroke(item.path);
         }
     }
     
@@ -180,7 +186,11 @@ displayCanvas.addEventListener("mousemove", (e) => {
 
 displayCanvas.addEventListener("mouseup", (e) => {
     if(drawing && currentPath) {
-        frameStrokes[currentFrame].push(currentPath);
+        frameStrokes[currentFrame].push({
+            path: currentPath,
+            color: currentColor,
+            lineWidth: displayCtx.lineWidth
+        });
         frameUndoneStrokes[currentFrame] = [];
         console.log(svg);
     }
@@ -189,7 +199,11 @@ displayCanvas.addEventListener("mouseup", (e) => {
 
 displayCanvas.addEventListener("mouseleave", (e) => {
     if(drawing && currentPath) {
-        frameStrokes[currentFrame].push(currentPath);
+        frameStrokes[currentFrame].push({
+            path: currentPath,
+            color: currentColor,
+            lineWidth: displayCtx.lineWidth
+        });
         frameUndoneStrokes[currentFrame] = [];
         console.log(svg);
     }
@@ -204,7 +218,7 @@ function trackSvgPath(key, x, y){
 
 //SVG download button
 const downloadBtn = document.getElementById("download");
-downloadBtn.addEventListener("click", () => {
+downloadBtn.addEventListener("click", async () => {
     let svgTag = ' width="400px" height="400px" xmlns="http://www.w3.org/2000/svg"';
     let finalSvg = `<svg ${svgTag}> <path d="${svg}" stroke-width="10" stroke="black" stroke-linecap="round" fill="none"/></svg>`; // CHANGE ATTRIBUTES TO USER PREFERENCES
     const blob = new Blob([finalSvg], {type: 'image/svg+xml'});
@@ -215,6 +229,13 @@ downloadBtn.addEventListener("click", () => {
     a.download = 'text.svg';
     a.click();
     URL.revokeObjectURL(a.href);
+
+    const ctx = displayCanvas.getContext('2d');
+    const svgData = displayCanvas.toDataURL();
+    const v = await window.Canvg.fromString(ctx, svgData);
+    await v.render();
+    const svgString = v.svg();
+    console.log(svgString);
 });
 
 //frames
@@ -423,36 +444,6 @@ function onionSkin(){
     }
 }
 
-
-require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
-
-// At the end of draw.js, replace the Monaco code with:
-
-window.addEventListener('DOMContentLoaded', function() {
-    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' }});
-
-    require(['vs/editor/editor.main'], function() {
-        window.editor = monaco.editor.create(document.getElementById('editor'), {
-            value: '// Your code here',
-            language: 'javascript',
-            theme: 'vs-dark',
-            fontFamily: 'Fira Code, monospace',
-            fontSize: 14,
-            lineHeight: 22,
-            automaticLayout: true,
-            readOnly: false,
-            cursorBlinking: 'smooth',
-            cursorStyle: 'line',
-            renderWhitespace: 'all',
-            minimap: { enabled: false},
-            wordWrap: 'on',
-            lineNumbers: 'on',
-            folding: true,
-            padding: { left: 10, right: 10, top: 10, bottom: 10 },
-        });
-    });
-});
-
 const canvasContainer = document.getElementById("canvasContainer");
 const editor = document.getElementById("editor");
 const swapBtn = document.getElementById("swap");
@@ -470,14 +461,35 @@ swapBtn.addEventListener("click", () => {
     }
 });
 
+//changing color
+
+
+let currentColor = "black";
+
 
 document.addEventListener("DOMContentLoaded", () => {
+ 
     Coloris({
       el: '#colorInput', // attach to input element
       theme: 'polaroid',
       format: 'rgb',
       onChange: (color, inputEl) => {
-        console.log(`The new color is ${color}`);
+        setDrawingColor(color);
       }
     });
 });
+
+
+function setDrawingColor(color) {
+    displayCtx.strokeStyle = color;
+
+
+    if (frames[currentFrame]) {
+        frames[currentFrame].ctx.strokeStyle = color;
+    }
+
+    currentColor = color;
+}
+
+const colorPickerBtn = document.getElementById("colorPicker");
+
