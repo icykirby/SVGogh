@@ -634,3 +634,90 @@ window.addEventListener('DOMContentLoaded', function () {
       });
     });
   });
+
+
+
+const shapesBtn = document.getElementById("shapes");
+
+//stamps
+function circleStamp(x, y, size) {
+    const path = new Path2D();
+    path.arc(x, y, size / 2, 0, 2 * Math.PI);
+    return path;
+}
+
+function squareStamp(x, y, size) {
+    const path = new Path2D();
+    path.rect(x - size/2, y - size/2, size, size);
+    return path;
+}
+
+function triangleStamp(x, y, size) {
+    const path = new Path2D();
+    const h = size * Math.sqrt(3) / 2;
+    path.moveTo(x, y - (2/3)*h);
+    path.lineTo(x - size/2, y + h/3);
+    path.lineTo(x + size/2, y + h/3);
+    path.closePath();
+    return path;
+}
+
+
+function starStamp(x, y, size) {
+    const path = new Path2D();
+    const outer = size / 2;
+    const inner = outer * 0.5;
+    for(let i=0; i<5; i++){
+        const angle = (i * 2 * Math.PI) / 5 - Math.PI/2;
+        const innerAngle = angle + Math.PI/5;
+        const x1 = x + outer * Math.cos(angle);
+        const y1 = y + outer * Math.sin(angle);
+        const x2 = x + inner * Math.cos(innerAngle);
+        const y2 = y + inner * Math.sin(innerAngle);
+        if(i===0) path.moveTo(x1, y1);
+        path.lineTo(x2, y2);
+        path.lineTo(x1, y1);
+    }
+    path.closePath();
+    return path;
+}
+
+
+
+function heartStamp(x, y, size) {
+    const path = new Path2D();
+    const topCurveHeight = size * 0.3;
+    path.moveTo(x, y + size/4);
+    path.bezierCurveTo(
+        x, y, 
+        x - size/2, y, 
+        x - size/2, y + topCurveHeight
+    );
+    path.bezierCurveTo(
+        x - size/2, y + size/2, 
+        x, y + size/1.5, 
+        x, y + size
+    );
+    path.bezierCurveTo(
+        x, y + size/1.5, 
+        x + size/2, y + size/2, 
+        x + size/2, y + topCurveHeight
+    );
+    path.bezierCurveTo(
+        x + size/2, y, 
+        x, y, 
+        x, y + size/4
+    );
+    path.closePath();
+    return path;
+}
+
+function diamondStamp(x, y, size) {
+    const path = new Path2D();
+    path.moveTo(x, y - size/2);
+    path.lineTo(x - size/2, y);
+    path.lineTo(x, y + size/2);
+    path.lineTo(x + size/2, y);
+    path.closePath();
+    return path;
+}
