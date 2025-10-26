@@ -3,33 +3,33 @@ from flask_pymongo import PyMongo
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_cors import CORS
 import os
-import datetime # <<< NEW: Required for adding timestamps
+import datetime 
 
 # Security and Database Helpers
 from werkzeug.security import generate_password_hash, check_password_hash
 from bson.objectid import ObjectId
 
-# --- APPLICATION SETUP ---
-app = Flask(__name__)
-CORS(app, supports_credentials=True)
+# --- APPLICATION SETUP (RENAMED TO 'api') ---
+api = Flask(__name__)
+CORS(api, supports_credentials=True)
 
-app.config['SECRET_KEY'] = os.environ.get(
+api.config['SECRET_KEY'] = os.environ.get(
     'FLASK_SECRET_KEY', 
     'e7f2c4b8a1d5e9f3b7c1a8d4e9f3b7c1a8d4e9f3b7c1a8d4e9f3b7c1a8d4e9f3' 
 )
 
 # Configure MongoDB Connection URI
-app.config['MONGO_URI'] = os.environ.get( 
+api.config['MONGO_URI'] = os.environ.get( 
     'MONGO_URI',
-    'mongodb+srv://mongodbdatabase.ph2yrip.mongodb.net/' 
+    'mongodb+srv://mongodbdatabase.ph2yrip.mongodb.net/svgogh_db' # Ensure you replace this with your actual URI!
 )
 
 # Initialize MongoDB
-mongo = PyMongo(app)
+mongo = PyMongo(api)
 
 # Initialize Flask-Login
 login_manager = LoginManager()
-login_manager.init_app(app)
+login_manager.init_app(api)
 
 # user model
 class User(UserMixin):
@@ -67,9 +67,10 @@ def load_user(user_id):
         return None
 
 
-#api endpoints
+# --- API ENDPOINTS (ALL ROUTES CHANGED TO USE @api.route) ---
 
-@app.route('/api/signup_user', methods=['POST'])
+# This is the new, uncached registration endpoint 
+@api.route('/api/signup_user', methods=['POST']) 
 def register():
     """Endpoint for user registration."""
     data = request.get_json()
@@ -93,7 +94,7 @@ def register():
     return jsonify({'msg': 'Registration successful'}), 201
 
 
-@app.route('/api/login', methods=['POST'])
+@api.route('/api/login', methods=['POST'])
 def login():
     """Endpoint for user login and session establishment."""
     data = request.get_json()
@@ -113,7 +114,7 @@ def login():
     return jsonify({'msg': 'Invalid credentials'}), 401
 
 
-@app.route('/api/logout')
+@api.route('/api/logout')
 @login_required 
 def logout():
     """Endpoint for logging out the current user and destroying the session."""
@@ -121,7 +122,7 @@ def logout():
     return jsonify({'msg': 'Logged out successfully'}), 200
 
 
-@app.route('/api/data')
+@api.route('/api/data')
 @login_required # Requires a valid session cookie for access
 def protected_data():
     """Example endpoint to retrieve data only for authenticated users."""
@@ -132,9 +133,7 @@ def protected_data():
     }), 200
 
 
-#api endpoints
-
-@app.route('/api/canvas', methods=['POST'])
+@api.route('/api/canvas', methods=['POST'])
 @login_required
 def create_canvas():
     """Creates a new canvas document associated with the current user."""
@@ -163,7 +162,7 @@ def create_canvas():
     }), 201
 
 
-@app.route('/api/canvas', methods=['GET'])
+@api.route('/api/canvas', methods=['GET'])
 @login_required
 def get_all_canvases():
     """Retrieves a list of all canvases belonging to the current user."""
@@ -185,7 +184,7 @@ def get_all_canvases():
     return jsonify(output), 200
 
 
-@app.route('/api/canvas/<canvas_id>', methods=['GET'])
+@api.route('/api/canvas/<canvas_id>', methods=['GET'])
 @login_required
 def get_canvas_by_id(canvas_id):
     """Retrieves a single canvas by ID, ensuring it belongs to the user."""
@@ -213,7 +212,7 @@ def get_canvas_by_id(canvas_id):
         return jsonify({'msg': 'Invalid canvas ID format'}), 400
 
 
-@app.route('/api/canvas/<canvas_id>', methods=['PUT'])
+@api.route('/api/canvas/<canvas_id>', methods=['PUT'])
 @login_required
 def update_canvas(canvas_id):
     """Updates an existing canvas, ensuring it belongs to the user."""
@@ -248,7 +247,7 @@ def update_canvas(canvas_id):
         return jsonify({'msg': 'Invalid canvas ID format'}), 400
 
 
-@app.route('/api/canvas/<canvas_id>', methods=['DELETE'])
+@api.route('/api/canvas/<canvas_id>', methods=['DELETE'])
 @login_required
 def delete_canvas(canvas_id):
     """Deletes a canvas, ensuring it belongs to the user."""
@@ -271,5 +270,4 @@ def delete_canvas(canvas_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=False) 
-
+    api.run(debug=False) # Changed from app.run to api.run
