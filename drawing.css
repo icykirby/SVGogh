@@ -100,3 +100,12 @@ canvas {
     opacity: 0;
 
 }
+
+#shapeSelector {
+    display: none;
+  }
+  
+  #shapeSelector.open {
+    display: inline-block;
+  }
+  
