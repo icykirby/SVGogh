@@ -1,7 +1,7 @@
 //canavs setup
 
 const displayCanvas = document.getElementById("canvas");
-const displayCtx = displayCanvas.getContext("2d");
+const displayCtx = displayCanvas.getContext("2d", { willReadFrequently: true });
 
 const container = displayCanvas.parentElement;
 displayCanvas.width = container.clientWidth;
@@ -492,4 +492,28 @@ function setDrawingColor(color) {
 }
 
 const colorPickerBtn = document.getElementById("colorPicker");
+let isPickingColor = false;
 
+colorPickerBtn.addEventListener("click", () => {
+  isPickingColor = true;
+  displayCanvas.style.cursor = "crosshair"; 
+  console.log("Color picker activated — click on the canvas to select a color.");
+});
+
+displayCanvas.addEventListener("click", (e) => {
+  if (!isPickingColor) return;
+
+  const rect = displayCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  const pixel = displayCtx.getImageData(x, y, 1, 1).data;
+  const color = `rgb(${pixel[0]}, ${pixel[1]}, ${pixel[2]})`;
+
+  console.log("Picked color:", color);
+  setDrawingColor(color);
+
+ 
+  isPickingColor = false;
+  displayCanvas.style.cursor = "default";
+});

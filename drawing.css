@@ -50,3 +50,13 @@ canvas {
     background-color: rgba(0,0,0,0.3); 
 }
 
+
+.clr-field button {
+    display: none !important;
+}
+  
+
+.clr-field input {
+    padding-left: 8px !important;
+}
+  
