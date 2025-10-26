@@ -330,16 +330,24 @@ const loopBtn = document.getElementById("loop");
 
 
 let playing = false;
+let looping = false
 let fps = 12;
 let frameInterval = 1000 / fps;
 let playBack = 0;
 let animationId = null;
 let lastTime = 0;
 
-fpsInput.addEventListener("input", () => { /////disable fps when animation is playing
+fpsInput.addEventListener("input", () => { 
+    if(playing){
+        return
+    }
     fps = parseInt(fpsInput.value);
     frameInterval = 1000 / fps;
     console.log("FPS:", fps);
+});
+
+loopBtn.addEventListener("click", () => {
+    looping = !looping;
 });
 
 function runAnimation(timestamp){
@@ -354,7 +362,16 @@ function runAnimation(timestamp){
         displayCtx.drawImage(frame.newFrame, 0, 0);
         
         updateCurrFrameDisplay(playBack + 1);
-        playBack = (playBack + 1) % totalFrames;
+        playBack += 1;
+        if (playBack >= totalFrames) {
+            if (looping) {
+                playBack = 0; 
+            } else {
+                stop(); 
+                console.log("stopped animation");
+                return;
+            }
+        }
     }
     requestAnimationFrame(runAnimation);
 }
