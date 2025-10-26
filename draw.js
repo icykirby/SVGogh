@@ -324,12 +324,23 @@ function displayFrame(index){
 //animation functionality
 const playBtn = document.getElementById("play");
 const stopBtn = document.getElementById("stop");
+const fpsInput = document.getElementById("fpsInput");
+const loopBtn = document.getElementById("loop");
+
+
 
 let playing = false;
-let fps = 2;
+let fps = 12;
 let frameInterval = 1000 / fps;
 let playBack = 0;
 let animationId = null;
+let lastTime = 0;
+
+fpsInput.addEventListener("input", () => { /////disable fps when animation is playing
+    fps = parseInt(fpsInput.value);
+    frameInterval = 1000 / fps;
+    console.log("FPS:", fps);
+});
 
 function runAnimation(timestamp){
     if(!playing){
