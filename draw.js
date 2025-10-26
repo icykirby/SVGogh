@@ -171,16 +171,35 @@ function saveCurrentFrame(){
 ////drawing functions -- CHANGE FOR TOUCH AND STYLUS SUPPORT
 let drawing = false;
 displayCanvas.addEventListener("mousedown", (e) => {
-    drawing = true;
     let x = e.offsetX;
     let y = e.offsetY;
-
+  
+    if (currentShape !== "none") {
+      // Draw selected shape as a stamp
+      const path = getShapePath(currentShape, x, y, brushSize * 4); // adjust size multiplier as you like
+      displayCtx.strokeStyle = currentColor;
+      displayCtx.lineWidth = 2;
+      displayCtx.stroke(path);
+  
+      frameStrokes[currentFrame].push({
+        path: path,
+        color: currentColor,
+        lineWidth: 2,
+      });
+      frameUndoneStrokes[currentFrame] = [];
+      saveCurrentFrame();
+      return; // don't enter free-draw mode
+    }
+  
+    // Otherwise, start free drawing
+    drawing = true;
     currentPath = new Path2D();
     displayCtx.lineWidth = brushSize;
     displayCtx.strokeStyle = currentColor;
     currentPath.moveTo(x, y);
     trackSvgPath("M", x, y);
-});
+  });
+  
 
 displayCanvas.addEventListener("mousemove", (e) => {
     let x = e.offsetX;
@@ -721,3 +740,23 @@ function diamondStamp(x, y, size) {
     path.closePath();
     return path;
 }
+
+function getShapePath(shape, x, y, size) {
+    switch (shape) {
+      case "circle": return circleStamp(x, y, size);
+      case "square": return squareStamp(x, y, size);
+      case "triangle": return triangleStamp(x, y, size);
+      case "heart": return heartStamp(x, y, size);
+      case "diamond": return diamondStamp(x, y, size);
+      default: return null;
+    }
+  }
+  
+
+const shapeSelector = document.getElementById("shapeSelector");
+let currentShape = "none";
+
+shapeSelector.addEventListener("change", (e) => {
+  currentShape = e.target.value;
+  console.log("Shape selected:", currentShape);
+});
