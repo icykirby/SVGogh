@@ -1,5 +1,4 @@
 //canavs setup
-
 const displayCanvas = document.getElementById("canvas");
 const displayCtx = displayCanvas.getContext("2d", { willReadFrequently: true });
 
@@ -61,7 +60,10 @@ clearBtn.addEventListener("click", () => {
 //UNDO AND REDO
 let frameStrokes = [[]];
 let frameUndoneStrokes = [[]];
+let framePaths = [[]];
+let frameUndonePaths = [[]];
 let currentPath;
+let pathIndex = -1;
 
 function getCurrentStrokes() {
     return frameStrokes[currentFrame];
@@ -70,7 +72,6 @@ function getCurrentStrokes() {
 function getCurrentUndoneStrokes() {
     return frameUndoneStrokes[currentFrame];
 }
-
 const undoBtn = document.getElementById("undo");
 undoBtn.addEventListener("click", () => {
     if (getCurrentStrokes().length === 0) {
@@ -86,7 +87,7 @@ undoBtn.addEventListener("click", () => {
     const undone = frameStrokes[currentFrame].pop();
     frameUndoneStrokes[currentFrame].push(undone);
     redrawFrame();
-    saveCurrentFrame();
+    updateEditorWithSvg();
 });
 
 const redoBtn = document.getElementById("redo");
@@ -104,8 +105,9 @@ redoBtn.addEventListener("click", () => {
     const redone = frameUndoneStrokes[currentFrame].pop();
     frameStrokes[currentFrame].push(redone);
     redrawFrame();
-    saveCurrentFrame();
+    updateEditorWithSvg();
 });
+
 
 function redrawFrame() {
 
@@ -131,13 +133,35 @@ function displayFrame(index) {
 
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
 
-    const frame = frames[index];
-    displayCtx.drawImage(frame.newFrame, 0, 0);
+    if (usingOnion && frameIndex > 0) {
+        displayCtx.save();
+        displayCtx.globalAlpha = 0.3;
+        const prevFrame = frames[frameIndex - 1];
+        if (prevFrame) {
+            displayCtx.drawImage(prevFrame.newFrame, 0, 0);
+        }
+        displayCtx.restore();
+    }
 
-    if (usingOnion && currentFrame > 0) {
-        onionSkin();
+
+    const strokes = frameStrokes[frameIndex];
+    if (strokes) {
+        strokes.forEach(s => {
+            displayCtx.strokeStyle = s.color;
+            displayCtx.lineWidth = s.lineWidth;
+            displayCtx.stroke(s.path);
+        });
+    }
+
+    if (window.editor) {
+        const paths = framePaths[frameIndex] || [];
+        const svgHeader = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">\n`;
+        const svgBody = paths.join("\n");
+        const svgFooter = `\n</svg>`;
+        window.editor.setValue(svgHeader + svgBody + svgFooter);
     }
 }
+
 
 function saveCurrentFrame() {
 
@@ -166,7 +190,13 @@ function saveCurrentFrame() {
 
     frames[currentFrame].ctx.drawImage(tempCanvas, 0, 0);
 }
+const shapeSelector = document.getElementById("shapeSelector");
+let currentShape = "none";
 
+shapeSelector.addEventListener("change", (e) => {
+    currentShape = e.target.value;
+    console.log("Shape selected:", currentShape);
+});
 
 ////drawing functions -- CHANGE FOR TOUCH AND STYLUS SUPPORT
 let drawing = false;
@@ -209,7 +239,8 @@ displayCanvas.addEventListener("mousemove", (e) => {
 
         currentPath.lineTo(x, y);
         displayCtx.stroke(currentPath);
-        trackSvgPath("L", x, y);
+        extendSvgPath(x, y);
+
     }
 });
 
@@ -221,7 +252,10 @@ displayCanvas.addEventListener("mouseup", (e) => {
             lineWidth: brushSize
         });
         frameUndoneStrokes[currentFrame] = [];
-        console.log(svg);
+
+        endSvgPath();
+        pathIndex += 1;
+        console.log(pathIndex);
     }
     drawing = false;
 });
@@ -234,7 +268,10 @@ displayCanvas.addEventListener("mouseleave", (e) => {
             lineWidth: brushSize
         });
         frameUndoneStrokes[currentFrame] = [];
-        console.log(svg);
+        pathIndex += 1;
+
+        endSvgPath();
+
     }
     drawing = false;
 });
@@ -420,6 +457,154 @@ function stop() {
 
 }
 
+
+const downloadBtn = document.getElementById("download");
+downloadBtn.addEventListener("click", async () => {
+    if (!framePaths || framePaths.length === 0) {
+        alert("No frames to export!");
+        return;
+    }
+
+    const hasContent = framePaths.some(paths => paths && paths.length > 0);
+    if (!hasContent) {
+        alert("No drawing content to export!");
+        return;
+    }
+
+    const width = displayCanvas.width;
+    const height = displayCanvas.height;
+
+    const frameDuration = 1 / (fps || 12);
+    const totalFrames = framePaths.length;
+    const totalDuration = totalFrames * frameDuration;
+
+    // Create SVG header with proper viewBox
+    let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">\n<defs>\n`;
+
+    // Define symbols
+    framePaths.forEach((paths, i) => {
+        const id = `frame${i + 1}`;
+        const content = paths.join("\n");
+        svg += `  <symbol id="${id}">\n${content}\n  </symbol>\n`;
+    });
+
+    svg += `</defs>\n\n`;
+
+    // Add frames using <use>
+    framePaths.forEach((_, i) => {
+        const id = `u${i + 1}`;
+        const frameRef = `#frame${i + 1}`;
+        const visibility = i === 0 ? "visible" : "hidden";
+        svg += `  <use id="${id}" href="${frameRef}" visibility="${visibility}"/>\n`;
+    });
+
+    // Animate visibility for playback
+    framePaths.forEach((_, i) => {
+        const begin = i * frameDuration;
+        const next = (i + 1) % totalFrames;
+        const currentUse = `#u${i + 1}`;
+        const nextUse = `#u${next + 1}`;
+
+        svg += `  <set href="${currentUse}" attributeName="visibility" to="hidden" begin="loop.begin+${(begin + frameDuration).toFixed(3)}s" dur="0.001s" fill="freeze"/>\n`;
+        svg += `  <set href="${nextUse}" attributeName="visibility" to="visible" begin="loop.begin+${(begin + frameDuration).toFixed(3)}s" dur="0.001s" fill="freeze"/>\n`;
+    });
+
+    svg += `  <animate id="loop" attributeName="visibility" from="hidden" to="hidden" begin="0s;loop.end" dur="${totalDuration}s" fill="freeze"/>\n`;
+    svg += `</svg>`;
+
+    // Trigger download
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "animated_drawing.svg";
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+
+
+
+
+
+
+//frames
+let frames = [];
+function addFrame(frame) {
+    frames.push(frame);
+    totalFrames = frames.length;
+}
+
+function createFrame() {
+    const newFrame = document.createElement("canvas");
+    newFrame.height = displayCanvas.clientHeight;
+    newFrame.width = displayCanvas.clientWidth;
+    const ctx = newFrame.getContext("2d");
+
+    return { newFrame, ctx };
+}
+
+
+
+const currFrameDisplay = document.getElementById("frameNum");
+let currentFrame = 0;
+let totalFrames = frames.length;
+let shownFrameNum = 0;
+
+function updateShownFrameNum() {
+    shownFrameNum = currentFrame + 1;
+}
+
+function updateCurrFrameDisplay(num) {
+    currFrameDisplay.innerHTML = num;
+}
+updateShownFrameNum();
+updateCurrFrameDisplay(shownFrameNum);
+
+let firstFrame = createFrame();
+addFrame(firstFrame);
+
+updateCurrFrameDisplay(shownFrameNum);
+
+
+const nextBtn = document.getElementById("nextFrame");
+nextBtn.addEventListener("click", () => {
+    saveCurrentFrame();
+    if (currentFrame + 1 >= totalFrames) {
+        let nextFrame = createFrame();
+        addFrame(nextFrame);
+        frameStrokes.push([]);
+        frameUndoneStrokes.push([]);
+        currentFrame += 1;
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
+        displayFrame(currentFrame);
+    }
+    else {
+        currentFrame += 1;
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
+        displayFrame(currentFrame);
+    }
+});
+
+const prevBtn = document.getElementById("prevFrame");
+prevBtn.addEventListener("click", () => {
+    saveCurrentFrame();
+    if (currentFrame > 0) {
+        currentFrame -= 1;
+        updateShownFrameNum();
+        updateCurrFrameDisplay(shownFrameNum);
+        displayFrame(currentFrame);
+    }
+    else {
+        return;
+    }
+});
+
+
+
+
 ///delete frame
 const deleteBtn = document.getElementById("deleteFrame");
 deleteBtn.addEventListener("click", () => {
@@ -430,10 +615,13 @@ function deleteFrame(i) {
 
     if (frames.length == 1) {
         displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
-        frameStrokes.splice(i, 1);
-        frameUndoneStrokes.splice(i, 1);
+
+        // Reset all arrays for the single frame
         frameStrokes[0] = [];
         frameUndoneStrokes[0] = [];
+        framePaths[0] = [];
+        frameUndonePaths[0] = [];
+
         saveCurrentFrame();
         return;
     }
@@ -441,19 +629,27 @@ function deleteFrame(i) {
     frames.splice(i, 1);
     frameStrokes.splice(i, 1);
     frameUndoneStrokes.splice(i, 1);
+    framePaths.splice(i, 1);
+    frameUndonePaths.splice(i, 1);
+
     totalFrames = frames.length;
 
     if (currentFrame >= frames.length) {
         currentFrame = frames.length - 1;
     }
 
+
     updateShownFrameNum();
     updateCurrFrameDisplay(shownFrameNum);
     displayFrame(currentFrame);
-    console.log("frame deleted");
-    console.log("Current frame index:", currentFrame, "Total frames:", frames.length);
 
+
+    updateEditorWithSvg();
+
+    console.log("Frame deleted");
+    console.log("Current frame index:", currentFrame, "Total frames:", frames.length);
 }
+
 
 //Onion skinning
 const onionBtn = document.getElementById("onion");
@@ -504,7 +700,10 @@ const editor = document.getElementById("editor");
 const swapBtn = document.getElementById("swap");
 
 swapBtn.addEventListener("click", () => {
-    if (displayCanvas.style.display !== 'none') {
+    const editorVisible = window.getComputedStyle(editor).display !== 'none';
+
+    if (!editorVisible) {
+
         displayCanvas.style.display = 'none';
         editor.style.display = 'block';
         if (playing) {
@@ -513,8 +712,15 @@ swapBtn.addEventListener("click", () => {
     } else {
         displayCanvas.style.display = 'block';
         editor.style.display = 'none';
+
+
+        if (window.editor && typeof window.editor.getValue === 'function') {
+            applyMonacoEditsToFramePaths();
+            applyMonacoEditsToCanvas();
+        }
     }
 });
+
 
 //changing color
 
@@ -523,7 +729,7 @@ let currentColor = "black";
 const colorBtn = document.getElementById("colorBtn");
 
 colorBtn.addEventListener("click", () => {
-    // Programmatically open the color picker
+
     colorInput.click();
 });
 colorInput.addEventListener("input", (e) => {
@@ -753,11 +959,162 @@ function getShapePath(shape, x, y, size) {
 }
 
 
-const shapeSelector = document.getElementById("shapeSelector");
-let currentShape = "none";
 
-shapeSelector.addEventListener("change", (e) => {
-    currentShape = e.target.value;
-    console.log("Shape selected:", currentShape);
+
+shapesBtn.addEventListener("click", () => {
+    shapeSelector.classList.toggle("open");
+    shapeSelector.focus();
+    shapeSelector.click();
 });
+
+function shapeToSvgPath(shape, x, y, size, color, width) {
+    switch (shape) {
+        case "circle":
+            return `<circle cx="${x}" cy="${y}" r="${size / 2}" stroke="${color}" stroke-width="${width}" fill="none" />`;
+        case "square":
+            return `<rect x="${x - size / 2}" y="${y - size / 2}" width="${size}" height="${size}" stroke="${color}" stroke-width="${width}" fill="none" />`;
+        case "triangle": {
+            const h = size * Math.sqrt(3) / 2;
+            const p1 = `${x},${y - (2 / 3) * h}`;
+            const p2 = `${x - size / 2},${y + h / 3}`;
+            const p3 = `${x + size / 2},${y + h / 3}`;
+            return `<polygon points="${p1} ${p2} ${p3}" stroke="${color}" stroke-width="${width}" fill="none" />`;
+        }
+        case "heart": {
+
+            const topCurveHeight = size * 0.3;
+            const d = `
+          M ${x},${y + size / 4}
+          C ${x},${y} ${x - size / 2},${y} ${x - size / 2},${y + topCurveHeight}
+          C ${x - size / 2},${y + size / 2} ${x},${y + size / 1.5} ${x},${y + size}
+          C ${x},${y + size / 1.5} ${x + size / 2},${y + size / 2} ${x + size / 2},${y + topCurveHeight}
+          C ${x + size / 2},${y} ${x},${y} ${x},${y + size / 4}
+          Z
+        `;
+            return `<path d="${d}" stroke="${color}" stroke-width="${width}" fill="none" />`;
+        }
+        case "diamond":
+            return `<polygon points="${x},${y - size / 2} ${x - size / 2},${y} ${x},${y + size / 2} ${x + size / 2},${y}" stroke="${color}" stroke-width="${width}" fill="none" />`;
+        default:
+            return "";
+    }
+}
+
+function redrawFrameWithOnion() {
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+
+
+    if (usingOnion && currentFrame > 0) {
+        displayCtx.save();
+        displayCtx.globalAlpha = 0.3;
+        displayCtx.drawImage(frames[currentFrame - 1].newFrame, 0, 0);
+        displayCtx.restore();
+    }
+
+
+    for (let item of getCurrentStrokes()) {
+        if (item.type === "clear") {
+            displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+            continue;
+        }
+        displayCtx.strokeStyle = item.color;
+        displayCtx.lineWidth = item.lineWidth;
+        displayCtx.stroke(item.path);
+    }
+}
+
+function applyMonacoEditsToCanvas() {
+    if (!window.editor) return;
+
+    const svgCode = window.editor.getValue();
+    try {
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgCode, "image/svg+xml");
+
+
+        displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+        frameStrokes[currentFrame] = [];
+
+
+        const allElements = svgDoc.querySelectorAll("path, circle, rect, polygon, ellipse, line, polyline");
+
+        allElements.forEach(el => {
+            let path2D;
+            const stroke = el.getAttribute("stroke") || "black";
+            const strokeWidth = parseFloat(el.getAttribute("stroke-width")) || 2;
+
+
+            if (el.tagName === "path") {
+                const d = el.getAttribute("d");
+                path2D = new Path2D(d);
+            } else if (el.tagName === "circle") {
+                const cx = parseFloat(el.getAttribute("cx"));
+                const cy = parseFloat(el.getAttribute("cy"));
+                const r = parseFloat(el.getAttribute("r"));
+                path2D = new Path2D();
+                path2D.arc(cx, cy, r, 0, 2 * Math.PI);
+            } else if (el.tagName === "rect") {
+                const x = parseFloat(el.getAttribute("x"));
+                const y = parseFloat(el.getAttribute("y"));
+                const w = parseFloat(el.getAttribute("width"));
+                const h = parseFloat(el.getAttribute("height"));
+                path2D = new Path2D();
+                path2D.rect(x, y, w, h);
+            } else if (el.tagName === "polygon" || el.tagName === "polyline") {
+                const points = el.getAttribute("points").trim().split(/\s+/);
+                path2D = new Path2D();
+                for (let i = 0; i < points.length; i += 2) {
+                    const x = parseFloat(points[i]);
+                    const y = parseFloat(points[i + 1]);
+                    if (i === 0) path2D.moveTo(x, y);
+                    else path2D.lineTo(x, y);
+                }
+                if (el.tagName === "polygon") path2D.closePath();
+            }
+
+            if (path2D) {
+                displayCtx.strokeStyle = stroke;
+                displayCtx.lineWidth = strokeWidth;
+                displayCtx.stroke(path2D);
+
+                frameStrokes[currentFrame].push({
+                    path: path2D,
+                    color: stroke,
+                    lineWidth: strokeWidth,
+                });
+            }
+        });
+
+
+        saveCurrentFrame();
+    } catch (e) {
+        console.warn("Invalid SVG input in Monaco — could not render", e);
+    }
+}
+
+
+function applyMonacoEditsToFramePaths() {
+    if (!window.editor) return;
+
+    const svgCode = window.editor.getValue();
+
+    try {
+        const parser = new DOMParser();
+        const svgDoc = parser.parseFromString(svgCode, "image/svg+xml");
+
+        // 🔥 Get all SVG drawing elements
+        const allElements = svgDoc.querySelectorAll("path, circle, rect, polygon, ellipse, line, polyline");
+
+        framePaths[currentFrame] = [];
+
+        allElements.forEach(el => {
+            framePaths[currentFrame].push(el.outerHTML);
+        });
+
+
+
+    } catch (e) {
+        console.warn("Invalid SVG input in Monaco — could not sync", e);
+    }
+}
 
