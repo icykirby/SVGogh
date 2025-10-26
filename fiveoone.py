@@ -11,7 +11,22 @@ from bson.objectid import ObjectId
 
 # --- APPLICATION SETUP (RENAMED TO 'api') ---
 api = Flask(__name__)
-CORS(api, supports_credentials=True)
+
+# --- CRITICAL FIX: Explicit CORS Configuration ---
+# We must explicitly list the local origin and the render origin, and specify methods/headers
+CORS(
+    api, 
+    # Use environment variable for production URL and localhost for development
+    origins=[
+        os.environ.get('CORS_ORIGIN', 'http://localhost:8000'), 
+        'https://svgogh.onrender.com', # Add your own render domain
+        'http://127.0.0.1:8000' # Common alternative for Python server
+    ],
+    supports_credentials=True,
+    methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], # Explicitly allow ALL methods
+    allow_headers=['Content-Type', 'Authorization']
+)
+
 
 api.config['SECRET_KEY'] = os.environ.get(
     'FLASK_SECRET_KEY', 
@@ -21,7 +36,7 @@ api.config['SECRET_KEY'] = os.environ.get(
 # Configure MongoDB Connection URI
 api.config['MONGO_URI'] = os.environ.get( 
     'MONGO_URI',
-    'mongodb+srv://mongodbdatabase.ph2yrip.mongodb.net/svgogh_db' # Ensure you replace this with your actual URI!
+    'mongodb+srv://mongodbdatabase.ph2yrip.mongodb.net/svgogh_db' # Ensure this is your actual URI!
 )
 
 # Initialize MongoDB
@@ -67,9 +82,9 @@ def load_user(user_id):
         return None
 
 
-# --- API ENDPOINTS (ALL ROUTES CHANGED TO USE @api.route) ---
+# --- API ENDPOINTS (ALL ROUTES USE @api.route) ---
 
-# This is the new, uncached registration endpoint 
+# Reverting to the cleaner /api/register route now that cache should be broken
 @api.route('/api/register', methods=['POST']) 
 def register():
     """Endpoint for user registration."""
@@ -270,5 +285,4 @@ def delete_canvas(canvas_id):
 
 
 if __name__ == '__main__':
-    api.run(debug=False) # Changed from app.run to api.run
-
+    api.run(debug=False) 
