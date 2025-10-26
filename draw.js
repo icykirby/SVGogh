@@ -516,7 +516,7 @@ document.addEventListener("DOMContentLoaded", () => {
     Coloris({
       defaultColor: '#000000',
       el: '#colorInput', // attach to input element
-      theme: 'polaroid',
+      theme: 'pill',
       format: 'rgb',
       placement: 'left',
       hideArrow: true, 
