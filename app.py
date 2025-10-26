@@ -69,7 +69,7 @@ def load_user(user_id):
 
 #api endpoints
 
-@app.route('/api/register', methods=['POST'])
+@app.route('/api/signup_user', methods=['POST'])
 def register():
     """Endpoint for user registration."""
     data = request.get_json()
@@ -272,3 +272,4 @@ def delete_canvas(canvas_id):
 
 if __name__ == '__main__':
     app.run(debug=False) 
+
