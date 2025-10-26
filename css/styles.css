@@ -122,7 +122,6 @@ body {
     box-shadow: 0 0 10px rgba(101, 0, 160, 0.7), 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Optional: make navbar links consistent size with buttons */
 .navbar__link {
     padding: 0.5rem 1rem;
     border-radius: 6px;
@@ -473,12 +472,10 @@ canvas {
     top: 0;
     left: 0;
     background-color: #342887;
-    /* your preferred background color */
     background-repeat: no-repeat;
     background-size: cover;
     background-position: 50% 50%;
     z-index: -1;
-    /* behind all content */
 }
 
 /* stats.js */
@@ -514,4 +511,51 @@ canvas {
 #stats {
     border-radius: 3px 3px 0 0;
     overflow: hidden;
+}
+
+
+/******* HOME PAGE ******/
+
+#add-button {
+    display: inline-flex;
+    justify-content: flex-end;
+    margin-top: 1rem;
+    float: right;
+}
+
+
+#add-button img:hover {
+    border-color: #ffffff;
+    transform: translateY(-4px);
+}
+
+#canvas_home {
+    position: relative;
+    /* allows absolute positioning for button */
+    margin-top: 2rem;
+    /* space under navbar/logout */
+    text-align: center;
+    /* center the text */
+}
+
+#canvas_home h2 {
+    font-size: 36px;
+    color: #342887;
+    margin: 0;
+    display: inline-block;
+}
+
+#add-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    right: 2rem;
+}
+
+#add-button img {
+    height: 60px;
+    cursor: pointer;
+    display: block;
+    transition: all 0.3s ease;
+    margin-right: 10rem;
 }
