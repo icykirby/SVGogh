@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
             messageArea.textContent = 'Registering...';
             
             
-            const response = await fetch(`${API_BASE_URL}/signup_user`, {
+            const response = await fetch(`${API_BASE_URL}/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
