@@ -7,7 +7,12 @@ const container = displayCanvas.parentElement;
 displayCanvas.width = container.clientWidth;
 displayCanvas.height = container.clientHeight;
 
-
+const brushSizeInput = document.getElementById("brushSizeInput");
+let brushSize = 5;
+brushSizeInput.addEventListener("input", () => {
+    brushSize = parseInt(brushSizeInput.value);
+    console.log("brush size", brushSize);
+});
 
 // resizing
 window.addEventListener('resize', () => {
@@ -26,7 +31,7 @@ window.addEventListener('resize', () => {
     displayCanvas.height = newHeight;
     
  
-    displayCtx.lineWidth = 10;
+    displayCtx.lineWidth = brushSize;
     displayCtx.strokeStyle = "black";
     displayCtx.lineCap = "round";
  
@@ -36,19 +41,10 @@ window.addEventListener('resize', () => {
 });
 
 //drawing settings
-displayCtx.lineWidth = 10;
+displayCtx.lineWidth = brushSize;
 displayCtx.strokeStyle = "black";
 displayCtx.lineCap = "round";
 
-//drawing buttons -- FIX DRAW AND ERASE
-const drawBtn = document.getElementById("draw"); 
-drawBtn.addEventListener("click", () => {
-
-});
-const eraserBtn = document.getElementById("erase");
-eraserBtn.addEventListener("click", () => {
-
-});
 const clearBtn = document.getElementById("clear");
 clearBtn.addEventListener("click", () => {
     const clearStroke = {
@@ -112,13 +108,15 @@ redoBtn.addEventListener("click", () => {
 });
 
 function redrawFrame() {
+
     displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+
+
     for (let item of getCurrentStrokes()) {
         if (item.type === "clear") {
             displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
             continue;
         }
-
         displayCtx.strokeStyle = item.color;
         displayCtx.lineWidth = item.lineWidth;
         displayCtx.stroke(item.path);
@@ -129,6 +127,17 @@ function redrawFrame() {
     }
 }
 
+function displayFrame(index){
+
+    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
+
+    const frame = frames[index];
+    displayCtx.drawImage(frame.newFrame, 0, 0);
+
+    if (usingOnion && currentFrame > 0) {
+        onionSkin();
+    }
+}
 
 function saveCurrentFrame(){
 
@@ -139,7 +148,7 @@ function saveCurrentFrame(){
     tempCanvas.height = displayCanvas.height;
     const tempCtx = tempCanvas.getContext('2d');
     
-    tempCtx.lineWidth = displayCtx.lineWidth;
+    tempCtx.lineWidth = brushSize;
     tempCtx.strokeStyle = displayCtx.strokeStyle;
     tempCtx.lineCap = displayCtx.lineCap;
     
@@ -167,7 +176,8 @@ displayCanvas.addEventListener("mousedown", (e) => {
     let y = e.offsetY;
 
     currentPath = new Path2D();
-
+    displayCtx.lineWidth = brushSize;
+    displayCtx.strokeStyle = currentColor;
     currentPath.moveTo(x, y);
     trackSvgPath("M", x, y);
 });
@@ -189,7 +199,7 @@ displayCanvas.addEventListener("mouseup", (e) => {
         frameStrokes[currentFrame].push({
             path: currentPath,
             color: currentColor,
-            lineWidth: displayCtx.lineWidth
+            lineWidth: brushSize
         });
         frameUndoneStrokes[currentFrame] = [];
         console.log(svg);
@@ -202,7 +212,7 @@ displayCanvas.addEventListener("mouseleave", (e) => {
         frameStrokes[currentFrame].push({
             path: currentPath,
             color: currentColor,
-            lineWidth: displayCtx.lineWidth
+            lineWidth: brushSize
         });
         frameUndoneStrokes[currentFrame] = [];
         console.log(svg);
@@ -312,14 +322,7 @@ prevBtn.addEventListener("click", () => {
     }
 });
 
-function displayFrame(index){
-    const frame = frames[index];
-    displayCtx.clearRect(0, 0, displayCanvas.width, displayCanvas.height);
-    displayCtx.drawImage(frame.newFrame, 0, 0);
-    if(usingOnion && currentFrame > 0){
-        onionSkin();
-    }
-}
+
 
 //animation functionality
 const playBtn = document.getElementById("play");
@@ -460,9 +463,14 @@ function onionSkin(){
             continue;
         }
         else{
-            displayCtx.stroke(item);
+            displayCtx.strokeStyle = item.color;   
+            displayCtx.lineWidth = item.lineWidth;
+            displayCtx.stroke(item.path);
         }
     }
+
+    
+
 
     if (currentFrame > 0) {
         displayCtx.save();
@@ -493,14 +501,38 @@ swapBtn.addEventListener("click", () => {
 
 
 let currentColor = "black";
+const colorBtn = document.getElementById("colorBtn");
 
+colorBtn.addEventListener("click", () => {
+    // Programmatically open the color picker
+    colorInput.click();
+});
+colorInput.addEventListener("input", (e) => {
+    setDrawingColor(e.target.value);
+});
 
 document.addEventListener("DOMContentLoaded", () => {
  
     Coloris({
+      defaultColor: '#000000',
       el: '#colorInput', // attach to input element
       theme: 'polaroid',
       format: 'rgb',
+      placement: 'left',
+      hideArrow: true, 
+      swatches: [
+        '#264653',
+        '#2a9d8f',
+        '#e9c46a',
+        'rgb(244,162,97)',
+        '#e76f51',
+        '#d62828',
+        'navy',
+        '#07b',
+        '#0096c7',
+        '#00b4d880',
+        'rgba(0,119,182,0.8)'
+      ],
       onChange: (color, inputEl) => {
         setDrawingColor(color);
       }
@@ -545,3 +577,60 @@ displayCanvas.addEventListener("click", (e) => {
   isPickingColor = false;
   displayCanvas.style.cursor = "default";
 });
+
+
+//ZOOMING
+
+const zoomInBtn = document.getElementById("zoomIn");
+const zoomOutBtn = document.getElementById("zoomOut");
+const zoomResetBtn = document.getElementById("zoomReset");
+
+let zoomLevel = 1;
+let panX = 0;
+let panY = 0;
+
+
+
+function applyCanvasZoom() {
+    displayCanvas.style.transform = `scale(${zoomLevel})`;
+}
+
+zoomInBtn.addEventListener("click", () => {
+    zoomLevel *= 1.2;
+    applyCanvasZoom();
+});
+
+zoomOutBtn.addEventListener("click", () => {
+    zoomLevel /= 1.2;
+    if (zoomLevel < 0.1) zoomLevel = 0.1;
+    applyCanvasZoom();
+});
+
+zoomResetBtn.addEventListener("click", () => {
+    zoomLevel = 1;
+    applyCanvasZoom();
+});
+
+window.addEventListener('DOMContentLoaded', function () {
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' } });
+    require(['vs/editor/editor.main'], function () {
+      window.editor = monaco.editor.create(document.getElementById('editor'), {
+        value: '/*\n Your SVG will appear below\n Editing your SVG will reflect on the canvas\n*/',
+        language: 'javascript',
+        theme: 'vs-dark',
+        fontFamily: 'Fira Code, monospace',
+        fontSize: 14,
+        lineHeight: 22,
+        automaticLayout: true,
+        readOnly: false,
+        cursorBlinking: 'smooth',
+        cursorStyle: 'line',
+        renderWhitespace: 'all',
+        minimap: { enabled: false },
+        wordWrap: 'on',
+        lineNumbers: 'on',
+        folding: true,
+        padding: { left: 10, right: 10, top: 10, bottom: 10 },
+      });
+    });
+  });

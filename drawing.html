@@ -17,13 +17,20 @@
 </head>
 <body>
     <div id="canvasContainer">
+      <div class="scrollInner">
         <canvas id="canvas"></canvas>
+      </div>
+        
         <div id="editor"></div>
     </div>
     
 
-    
+    <br><br>
     <div id="frameNum"></div>
+    <button id="colorBtn">color
+      <input id="colorInput" type="text" value="rgb(0, 0, 0)" data-coloris>
+    </button>
+   
     <button id="download">download</button>
     <button id="undo">undo</button>
     <button id="redo">redo</button>
@@ -32,44 +39,20 @@
     <button id="nextFrame">next frame</button>
     <button id="prevFrame">prev frame</button>
     <button id="deleteFrame">delete Frame</button>
-    <button id="draw">draw</button>
-    <button id="erase">erase</button>
+    <button id="brushes">brushes</button>
+    <input id="brushSizeInput" type="number" value=5 placeholder="Brush Size">
     <button id="clear">clear frame</button>
     <button id="onion">onion</button>
     <button id="swap">swap to code</button>
     <button id="loop">loop</button>
     <button id="zoomIn">zoom in</button>
+    <button id="zoomReset">zoom reset</button>
     <button id="zoomOut">zoom out</button>
     <input id="fpsInput" type="number" value=12 placeholder="FPS">
     <button id="colorPicker">colorPicker</button>
     
-  
-    <input id="colorInput" type="text" value="rgb(0, 0, 0)" data-coloris>
+    
 
-    <script>
-        window.addEventListener('DOMContentLoaded', function () {
-          require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.41.0/min/vs' } });
-          require(['vs/editor/editor.main'], function () {
-            window.editor = monaco.editor.create(document.getElementById('editor'), {
-              value: '// Your code here',
-              language: 'javascript',
-              theme: 'vs-dark',
-              fontFamily: 'Fira Code, monospace',
-              fontSize: 14,
-              lineHeight: 22,
-              automaticLayout: true,
-              readOnly: false,
-              cursorBlinking: 'smooth',
-              cursorStyle: 'line',
-              renderWhitespace: 'all',
-              minimap: { enabled: false },
-              wordWrap: 'on',
-              lineNumbers: 'on',
-              folding: true,
-              padding: { left: 10, right: 10, top: 10, bottom: 10 },
-            });
-          });
-        });
-        </script>
+
         
 </html>
