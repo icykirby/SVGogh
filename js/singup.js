@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://svgogh.onrender.com/";
+const API_BASE_URL = "https://svgogh.onrender.com/api";
 
 document.addEventListener('DOMContentLoaded', () => {
     const signupForm = document.getElementById('signup-form'); //assumes signup.html uses this ID
